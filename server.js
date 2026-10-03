@@ -134,7 +134,26 @@ app.post("/api/login", async (req, res) => {
   res.json({ token, user: publicUser(user) });
 });
 
-// ---- Auth guard: everything below except signup/login needs Bearer token ----
+// ---- Guest access: no sign-in needed, the app is open for all ----
+app.post("/api/guest", async (req, res) => {
+  let username;
+  do {
+    username = "guest_" + crypto.randomBytes(4).toString("hex");
+  } while (db.users.some((u) => u.username === username));
+  const n = 1000 + Math.floor(Math.random() * 9000);
+  const user = {
+    id: uid(), username, displayName: `Guest ${n}`,
+    passHash: null, salt: null,
+    bio: "", avatarUrl: null, createdAt: nowIso(), guest: true,
+  };
+  db.users.push(user);
+  const token = crypto.randomBytes(32).toString("hex");
+  db.sessions.push({ token, userId: user.id, createdAt: nowIso() });
+  await saveDb();
+  res.status(201).json({ token, user: publicUser(user) });
+});
+
+// ---- Auth guard: everything below except signup/login/guest needs Bearer token ----
 function requireAuth(req, res, next) {
   const h = req.headers.authorization || "";
   const token = h.startsWith("Bearer ") ? h.slice(7) : "";
@@ -145,7 +164,7 @@ function requireAuth(req, res, next) {
   next();
 }
 app.use("/api", (req, res, next) => {
-  if (req.method === "POST" && (req.path === "/signup" || req.path === "/login")) return next();
+  if (req.method === "POST" && (req.path === "/signup" || req.path === "/login" || req.path === "/guest")) return next();
   requireAuth(req, res, next);
 });
 
