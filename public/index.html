@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dan Recovery — Connect, Chat, Call</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== Auth screen ===== -->
+<div id="auth-screen" class="screen">
+  <div class="login-card">
+    <div class="logo">
+      <svg viewBox="0 0 64 64" class="logo-shield" aria-hidden="true">
+        <path d="M32 4 L56 14 V30 C56 46 46 56 32 60 C18 56 8 46 8 30 V14 Z" fill="#0F766E"/>
+        <path d="M44 26 a12 12 0 1 0 3.5 8.5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+        <path d="M47.5 24 L48 32 L40.5 30.5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>Dan Recovery</h1>
+    </div>
+    <p class="tagline">Chat in real time. Call with voice &amp; video. Share your moments.</p>
+    <div class="auth-tabs">
+      <button id="tab-login" class="auth-tab active">Log in</button>
+      <button id="tab-signup" class="auth-tab">Sign up</button>
+    </div>
+    <div id="login-form">
+      <input id="login-username" type="text" maxlength="20" placeholder="Username" autocomplete="username">
+      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password">
+      <button id="login-btn" class="btn-primary wide">Log in</button>
+    </div>
+    <div id="signup-form" class="hidden">
+      <input id="signup-username" type="text" maxlength="20" placeholder="Username (letters, numbers, _)" autocomplete="username">
+      <input id="signup-display" type="text" maxlength="40" placeholder="Display name">
+      <input id="signup-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
+      <button id="signup-btn" class="btn-primary wide">Create account</button>
+    </div>
+    <p id="auth-msg" class="msg"></p>
+  </div>
+</div>
+
+<!-- ===== Main app ===== -->
+<div id="app-screen" class="screen hidden">
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" class="logo-shield sm" aria-hidden="true">
+        <path d="M32 4 L56 14 V30 C56 46 46 56 32 60 C18 56 8 46 8 30 V14 Z" fill="#ffffff"/>
+        <path d="M44 26 a12 12 0 1 0 3.5 8.5" fill="none" stroke="#0F766E" stroke-width="6" stroke-linecap="round"/>
+        <path d="M47.5 24 L48 32 L40.5 30.5" fill="none" stroke="#0F766E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Dan Recovery</span>
+    </div>
+    <div class="top-actions">
+      <button id="notif-bell" class="btn-icon light" title="Notifications">🔔<span id="notif-badge" class="badge hidden">0</span></button>
+      <button id="profile-btn" class="profile-chip" title="Profile">
+        <img id="me-avatar" class="avatar-img hidden" alt="me">
+        <span id="me-avatar-letter" class="avatar sm"></span>
+        <strong id="me-name"></strong>
+      </button>
+      <span id="conn-dot" class="dot online" title="connected"></span>
+    </div>
+  </header>
+  <div id="notif-panel" class="notif-panel hidden card">
+    <div class="notif-head"><strong>Notifications</strong><button id="notif-read-all" class="link-btn">Mark all read</button></div>
+    <ul id="notif-list"></ul>
+  </div>
+
+  <main class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar card">
+      <div class="side-tabs">
+        <button data-tab="online" class="side-tab active">Online</button>
+        <button data-tab="friends" class="side-tab">Friends</button>
+        <button data-tab="matches" class="side-tab">Matches</button>
+        <button data-tab="channels" class="side-tab">Channels</button>
+        <button data-tab="discover" class="side-tab">Discover</button>
+      </div>
+
+      <div id="tabpane-online">
+        <ul id="user-list" class="plist"></ul>
+      </div>
+
+      <div id="tabpane-friends" class="hidden">
+        <input id="friend-search" type="text" placeholder="Search users…" autocomplete="off">
+        <ul id="search-results" class="plist"></ul>
+        <h3>Friends</h3>
+        <ul id="friend-list" class="plist"></ul>
+      </div>
+
+      <div id="tabpane-matches" class="hidden">
+        <p class="muted small">Mutual friends — chat or call in two taps.</p>
+        <ul id="match-list" class="plist"></ul>
+      </div>
+
+      <div id="tabpane-discover" class="hidden">
+        <p class="muted small">Everyone on Dan Recovery. One tap to add.</p>
+        <ul id="discover-list" class="plist"></ul>
+      </div>
+
+      <div id="tabpane-channels" class="hidden">
+        <div class="chan-create">
+          <input id="chan-name" type="text" maxlength="60" placeholder="Channel name">
+          <input id="chan-desc" type="text" maxlength="300" placeholder="Description (optional)">
+          <button id="chan-create-btn" class="btn-primary">Create</button>
+        </div>
+        <ul id="channel-list" class="plist"></ul>
+      </div>
+    </aside>
+
+    <!-- Feed -->
+    <section class="feed-col">
+      <div id="channel-banner" class="card hidden">
+        <strong id="channel-banner-name"></strong>
+        <span id="channel-banner-desc" class="muted"></span>
+        <button id="channel-banner-leave" class="link-btn">Leave</button>
+        <button id="channel-banner-all" class="link-btn">← All posts</button>
+      </div>
+      <div class="composer card">
+        <h2 id="composer-title">Share something</h2>
+        <textarea id="post-text" rows="3" maxlength="2000" placeholder="What's on your mind?"></textarea>
+        <div class="composer-row">
+          <label class="file-label">
+            📷 Add photo
+            <input id="post-photo" type="file" accept="image/*" hidden>
+          </label>
+          <img id="photo-preview" class="hidden" alt="photo preview">
+          <button id="post-btn" class="btn-primary">Post</button>
+        </div>
+        <p id="composer-msg" class="msg"></p>
+      </div>
+      <div id="feed"></div>
+    </section>
+
+    <!-- Chat panel -->
+    <aside class="chat-col card">
+      <div id="chat-empty" class="chat-empty">👈 Click someone online to start chatting</div>
+      <div id="chat-active" class="hidden">
+        <div class="chat-header">
+          <strong id="chat-with-name"></strong>
+          <div class="call-btns">
+            <button id="call-audio-btn" class="btn-icon" title="Voice call">📞</button>
+            <button id="call-video-btn" class="btn-icon" title="Video call">🎥</button>
+            <button id="chat-close-btn" class="btn-icon" title="Close">✕</button>
+          </div>
+        </div>
+        <div id="chat-messages"></div>
+        <div class="chat-input-row">
+          <input id="chat-input" type="text" maxlength="4000" placeholder="Type a message…" autocomplete="off">
+          <button id="chat-send-btn" class="btn-primary">Send</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- ===== Profile modal ===== -->
+<div id="profile-modal" class="modal hidden">
+  <div class="modal-card wide-card">
+    <h2>Your profile</h2>
+    <img id="profile-avatar" class="avatar-lg" alt="avatar">
+    <label class="file-label">Change photo<input id="avatar-input" type="file" accept="image/*" hidden></label>
+    <input id="profile-display" type="text" maxlength="40" placeholder="Display name">
+    <textarea id="profile-bio" rows="3" maxlength="300" placeholder="Bio"></textarea>
+    <p class="muted small">Username: <span id="profile-username"></span> (can't be changed)</p>
+    <div class="modal-btns">
+      <button id="profile-save" class="btn-primary">Save</button>
+      <button id="profile-close" class="btn-icon">✕</button>
+      <button id="logout-btn" class="btn-danger">Log out</button>
+    </div>
+    <p id="profile-msg" class="msg"></p>
+  </div>
+</div>
+
+<!-- ===== Incoming call modal ===== -->
+<div id="incoming-modal" class="modal hidden">
+  <div class="modal-card">
+    <h2 id="incoming-title">Incoming call</h2>
+    <p id="incoming-sub"></p>
+    <div class="modal-btns">
+      <button id="incoming-accept" class="btn-primary">Accept</button>
+      <button id="incoming-decline" class="btn-danger">Decline</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Active call overlay ===== -->
+<div id="call-overlay" class="modal hidden">
+  <div class="call-card">
+    <h2 id="call-status">Calling…</h2>
+    <div class="video-wrap">
+      <video id="remote-video" autoplay playsinline></video>
+      <video id="local-video" autoplay playsinline muted></video>
+    </div>
+    <div class="call-controls">
+      <button id="mute-btn" class="btn-icon big" title="Mute">🎙️</button>
+      <button id="hangup-btn" class="btn-danger big" title="Hang up">📵</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
