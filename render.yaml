@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: dan-recovery-web
+    runtime: docker
+    plan: free
+    # Persistent disk so db.json + uploads survive restarts/redeploys.
+    # NOTE: disks are not available on Render's free tier — use a paid
+    # instance type if you need persistence, otherwise data resets on deploy.
+    disks:
+      - name: data
+        mountPath: /data
+        sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: PORT
+        value: 3000
+    healthCheckPath: /
