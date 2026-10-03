@@ -32,27 +32,12 @@ async function api(path, { method = "GET", body, form } = {}) {
   return { status: res.status, data };
 }
 
-// ---------------- Auth ----------------
-function showAuthMsg(text, ok = false) {
-  const m = $("auth-msg");
-  m.textContent = text;
-  m.className = "msg" + (ok ? " ok" : "");
-}
-function switchAuthTab(which) {
-  $("tab-login").classList.toggle("active", which === "login");
-  $("tab-signup").classList.toggle("active", which === "signup");
-  $("login-form").classList.toggle("hidden", which !== "login");
-  $("signup-form").classList.toggle("hidden", which !== "signup");
-  showAuthMsg("");
-}
-$("tab-login").addEventListener("click", () => switchAuthTab("login"));
-$("tab-signup").addEventListener("click", () => switchAuthTab("signup"));
-
+// ---------------- Session (guest mode) ----------------
+// No sign-in screen: the app is open for all. Guests are created silently.
 async function enterApp(token, user) {
   state.token = token;
   state.me = user;
   localStorage.setItem("dr_token", token);
-  $("auth-screen").classList.add("hidden");
   $("app-screen").classList.remove("hidden");
   renderMe();
   connectSocket();
@@ -60,32 +45,7 @@ async function enterApp(token, user) {
   setInterval(refreshNotifications, 20000);
 }
 
-async function doLogin() {
-  const username = $("login-username").value.trim();
-  const password = $("login-password").value;
-  if (!username || !password) return showAuthMsg("Enter username and password.");
-  const { status, data } = await api("/api/login", { method: "POST", body: { username, password } });
-  if (status !== 200) return showAuthMsg(data?.error || "Login failed.");
-  enterApp(data.token, data.user);
-}
-
-async function doSignup() {
-  const username = $("signup-username").value.trim();
-  const displayName = $("signup-display").value.trim();
-  const password = $("signup-password").value;
-  if (!username || !password) return showAuthMsg("Enter a username and password.");
-  const { status, data } = await api("/api/signup", {
-    method: "POST", body: { username, password, displayName },
-  });
-  if (status !== 201) return showAuthMsg(data?.error || "Signup failed.");
-  enterApp(data.token, data.user);
-}
-
-$("login-btn").addEventListener("click", doLogin);
-$("signup-btn").addEventListener("click", doSignup);
-$("login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
-$("signup-password").addEventListener("keydown", (e) => { if (e.key === "Enter") doSignup(); });
-
+// Guest mode: logout just rotates to a fresh guest identity.
 async function logout() {
   try { await api("/api/logout", { method: "POST" }); } catch {}
   if (state.socket) state.socket.disconnect();
@@ -94,14 +54,19 @@ async function logout() {
 }
 $("logout-btn").addEventListener("click", logout);
 
-// Auto-login from saved token
+// Open for all: reuse the saved guest token, otherwise become a guest silently.
 (async function init() {
   const token = localStorage.getItem("dr_token");
-  if (!token) return;
-  state.token = token;
-  const { status, data } = await api("/api/me");
-  if (status === 200) enterApp(token, data);
-  else { state.token = null; localStorage.removeItem("dr_token"); }
+  if (token) {
+    state.token = token;
+    const { status, data } = await api("/api/me");
+    if (status === 200) return enterApp(token, data);
+    state.token = null;
+    localStorage.removeItem("dr_token");
+  }
+  const { status, data } = await api("/api/guest", { method: "POST" });
+  if (status === 201) enterApp(data.token, data.user);
+  else document.body.innerHTML = "<p style='padding:2rem;font-family:sans-serif'>Could not start. Please reload.</p>";
 })();
 
 function renderMe() {

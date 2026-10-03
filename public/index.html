@@ -8,37 +8,6 @@
 </head>
 <body>
 
-<!-- ===== Auth screen ===== -->
-<div id="auth-screen" class="screen">
-  <div class="login-card">
-    <div class="logo">
-      <svg viewBox="0 0 64 64" class="logo-shield" aria-hidden="true">
-        <path d="M32 4 L56 14 V30 C56 46 46 56 32 60 C18 56 8 46 8 30 V14 Z" fill="#0F766E"/>
-        <path d="M44 26 a12 12 0 1 0 3.5 8.5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
-        <path d="M47.5 24 L48 32 L40.5 30.5" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <h1>Dan Recovery</h1>
-    </div>
-    <p class="tagline">Chat in real time. Call with voice &amp; video. Share your moments.</p>
-    <div class="auth-tabs">
-      <button id="tab-login" class="auth-tab active">Log in</button>
-      <button id="tab-signup" class="auth-tab">Sign up</button>
-    </div>
-    <div id="login-form">
-      <input id="login-username" type="text" maxlength="20" placeholder="Username" autocomplete="username">
-      <input id="login-password" type="password" placeholder="Password" autocomplete="current-password">
-      <button id="login-btn" class="btn-primary wide">Log in</button>
-    </div>
-    <div id="signup-form" class="hidden">
-      <input id="signup-username" type="text" maxlength="20" placeholder="Username (letters, numbers, _)" autocomplete="username">
-      <input id="signup-display" type="text" maxlength="40" placeholder="Display name">
-      <input id="signup-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
-      <button id="signup-btn" class="btn-primary wide">Create account</button>
-    </div>
-    <p id="auth-msg" class="msg"></p>
-  </div>
-</div>
-
 <!-- ===== Main app ===== -->
 <div id="app-screen" class="screen hidden">
   <header class="topbar">
